@@ -10,18 +10,20 @@ import os
 def parseArguments():
     parser = argparse.ArgumentParser(description="Journal Entry Tracker")
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("-c", "--create", help="the contents", default="contents")
-    parser.add_argument("--title", help="the title", default="title")
+    group.add_argument("-c", "--create", help="the contents")
+    parser.add_argument("--title", help="the title")
     group.add_argument("-l", "--list", help="List entries", action="store_true")
     args = parser.parse_args()
     
     if args.list:
         # print("List out the entries")
         return ["List"]
-    if args.create:
+    elif args.create:
         # print("Title: {}".format(args.title,))
         # print("Contents: {}".format(args.create))
         return [args.title, args.create]
+    else:
+        return []
 
 def printEntries():
     with open('data_file.json') as f:
@@ -48,9 +50,14 @@ def addEntry(title, contents):
 def main():
     # args = [print entries] or [title, content]
     args = parseArguments()
-
+    
     # list out the entries
     if len(args) <= 1:
+        try:
+            entries = open("data_file.json", 'r')
+        except FileNotFoundError:
+            print("No Journal Entries")
+            return 
         printEntries()
     # add an entry
     elif len(args) >= 2:
