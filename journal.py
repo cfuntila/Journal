@@ -1,70 +1,89 @@
 #!/usr/bin/env python3
 
 import argparse
-import sys
 import json
-import pprint
 import os
 
+class Entry:
+    def __init__(self, title, content):
+        self.title = title
+        self.content = content
+    
+    def isValidEntry(self):
+        return len(self.title) > 0 and len(self.content) > 0
 
-def parseArguments():
+    def getContent(self):
+        return self.content
+    
+    def getTitle(self):
+        return self.title
+
+class Journal:
+
+    def __init__(self, fileName):
+        self.fileName = fileName
+        self.myIndent = 4
+    
+    def addEntry(self, title, content):
+        newEntry = Entry(title, content)
+        
+        if not os.path.isfile(self.fileName):
+            firstEntry = [ newEntry.__dict__ ]
+            with open(self.fileName, mode='w') as f:
+                f.write(json.dumps(firstEntry, indent=self.myIndent))
+        else:
+            # TODO - O(n) -> make O(1) : find a way to append 
+            with open(self.fileName) as f:
+                currData = json.load(f)
+
+            currData.append(newEntry.__dict__)
+
+            with open(self.fileName, mode='w') as f:
+                f.write(json.dumps(currData, indent=self.myIndent))
+
+    def printJournalTitles(self):
+        if not os.path.isfile(self.fileName):
+            print("\nNo entries in journal, nothing to print\n")
+        else:
+            with open(self.fileName) as f:
+                # currData is a dictionary
+                currData = json.load(f)
+
+            print("\nYour Entry Titles:")
+            print("==================")
+            for i in range(len(currData)):
+                entry = currData[i]
+                print(f"{i+1}. {entry['title']}")
+            print("\n")
+
+    # prints the contents of the json file, used for testing
+    def printJournal(self):
+        if not os.path.isfile(self.fileName):
+            print("No entries in journal, nothing to print")
+        else:
+            with open(self.fileName) as f:
+                data = f.read()
+                print(data)    
+
+def main():
     parser = argparse.ArgumentParser(description="Journal Entry Tracker")
     group = parser.add_mutually_exclusive_group()
+
     group.add_argument("-c", "--create", help="the contents")
     parser.add_argument("--title", help="the title")
     group.add_argument("-l", "--list", help="List entries", action="store_true")
+
     args = parser.parse_args()
-    
+
     if args.list:
-        # print("List out the entries")
-        return ["List"]
+        myJournal.printJournalTitles()
     elif args.create:
-        # print("Title: {}".format(args.title,))
-        # print("Contents: {}".format(args.create))
-        return [args.title, args.create]
+        myJournal.addEntry(args.title, args.create)
     else:
-        return []
+        print("You must povide an action: create entry or list entries")
 
-def printEntries():
-    with open('data_file.json') as f:
-        data = f.read()
-        json_data = json.loads(data)
-    print(json.dumps(json_data, indent=4, sort_keys=True))
-
-def addEntry(title, contents):
-    entries = []
-    journalEntry = {title: contents}
-    if not os.path.isfile("data_file.json"):
-        entries.append(journalEntry)
-        with open("data_file.json", mode='w') as f:
-            f.write(json.dumps(entries, indent=2))
-    else:
-        # TODO - O(n) -> make O(1) : find a way to append 
-        with open("data_file.json") as feedsjson:
-            feeds = json.load(feedsjson)
-
-        feeds.append(journalEntry)
-        with open("data_file.json", mode='w') as f:
-            f.write(json.dumps(feeds, indent=2))
-
-def main():
-    # args = [print entries] or [title, content]
-    args = parseArguments()
-    
-    # list out the entries
-    if len(args) <= 1:
-        try:
-            entries = open("data_file.json", 'r')
-        except FileNotFoundError:
-            print("No Journal Entries")
-            return 
-        printEntries()
-    # add an entry
-    elif len(args) >= 2:
-        title = args[0]
-        contents = args[1]
-        addEntry(title, contents)
-
-main()
+if __name__ == '__main__':
+    myJournal = Journal("data.json")
+    main()
 
 
