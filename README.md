@@ -20,7 +20,8 @@ Run the following to view all the titles of your journal entries
 Your should see something like this:
 ```
 
-Your Entry Titles:==================
+Your Entry Titles:
+==================
 1. Stephen Hawking
 
 ```
